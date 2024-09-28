@@ -1,0 +1,18 @@
+{
+  "name": "Alice Johnson",
+  "email": "alice.johnson@example.com",
+  "comment": "This is a great post! I really enjoyed reading it.",
+  "subcomment": [
+    {
+      "name": "Bob Smith",
+      "email": "bob.smith@example.com",
+      "comment": "I agree with Alice. The post was very informative."
+    },
+    {
+      "name": "Charlie Brown",
+      "email": "charlie.brown@example.com",
+      "comment": "Thanks for the feedback! I'm glad you found it useful."
+    }
+  ],
+  "postId": "jh74700cgd147e7gf2ks3ba56h7051wm"  
+}
