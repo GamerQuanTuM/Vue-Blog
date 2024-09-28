@@ -66,17 +66,23 @@ const submitComment = () => {
 const submitReply = (comment: Comment) => {
   const { _creationTime, ...rest } = comment;
 
-  const subcomments = (Array.isArray(comment.subcomment) ? comment.subcomment : [comment.subcomment]).filter(subcomment => subcomment !== undefined);
+  // Filter out undefined values from subcomment array
+  const subcomments = (Array.isArray(comment.subcomment) ? comment.subcomment : [comment.subcomment])
+    .filter((subcomment): subcomment is { name: string; email: string; comment: string; } => subcomment !== undefined);
+
+  // Ensure replyForm.value is of the correct type
+  const newReply = { ...replyForm.value };
 
   const postCommentObj = {
     ...rest,
-    subcomment: [...subcomments, replyForm.value]
+    subcomment: [...subcomments, newReply]
   };
 
   updateComment(postCommentObj);
   replyForm.value = { name: '', email: '', comment: '' };
   activeReplyForm.value = null;
 };
+
 
 const toggleSubcomments = (commentId: string) => {
   if (visibleSubcomments.value.has(commentId)) {
