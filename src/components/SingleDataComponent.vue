@@ -326,9 +326,15 @@ const handleImageUpload = async () => {
                 </div>
                 <div class="w-full flex flex-col gap-2">
                     <label class="text-[#10115E] text-sm">Subject</label>
-                    <input v-model="postData.subject"
-                        @input="(e: Event) => updatePostData('subject', (e.target as HTMLInputElement).value)"
-                        placeholder="Enter Your subject" class="border border-slate-400 rounded-md h-10 px-3" />
+                    <select v-model="postData.subject"
+                        @change="(e: Event) => updatePostData('subject', (e.target as HTMLSelectElement).value)"
+                        class="border border-slate-400 rounded-md h-10 px-3 w-full">
+                        <option value="" disabled selected>Select a Subject</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Science">Gaming</option>
+                        <option value="Health">Entertainment</option>
+                    </select>
                 </div>
                 <div class="w-full flex flex-col gap-2">
                     <label class="text-[#10115E] text-sm">Description</label>
