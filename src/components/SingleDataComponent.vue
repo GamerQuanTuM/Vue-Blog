@@ -338,26 +338,39 @@ const handleImageUpload = async () => {
                 </div>
                 <div class="w-full flex flex-col gap-2 relative">
                     <label class="text-[#10115E] text-sm">Image</label>
-                    <img v-if="!temporaryImg" :src="postData.image" class="max-h-60 rounded-md object-cover"
-                        alt="Post image" />
-                    <img v-else :src="temporaryImg" class="max-h-60 rounded-md object-cover" alt="Post image" />
+
+                    <!-- New clickable div for image upload -->
+                    <div v-if="!postData.image && !temporaryImg" @click="triggerFileInput"
+                        class="w-full h-40 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="text-center text-gray-500">
+                            <IconEdit class="w-12 h-12 mx-auto mb-2" />
+                            <p>Click to Upload Image</p>
+                        </div>
+                    </div>
+
+                    <!-- Existing image display with edit/delete options -->
+                    <img v-if="postData.image && !temporaryImg" :src="postData.image"
+                        class="max-h-60 rounded-md object-cover" alt="Post image" />
+
+                    <img v-if="temporaryImg" :src="temporaryImg" class="max-h-60 rounded-md object-cover"
+                        alt="Temporary Post image" />
+
                     <div class="flex items-center gap-3 absolute right-3 top-10">
                         <button @click="triggerFileInput"
                             class="text-white hover:text-blue-500 focus:outline-none transition-colors duration-200"
-                            aria-label="Delete comment">
+                            aria-label="Edit image">
                             <IconEdit class="w-8 h-8" />
                         </button>
-                        <button @click="resetImage" v-if="temporaryImg"
+                        <button
+                            @click="isCreatingNew ? resetImage() : (temporaryImg ? resetImage() : postData.image = '')"
+                            v-if="temporaryImg || isCreatingNew"
                             class="text-white hover:text-blue-500 focus:outline-none transition-colors duration-200"
-                            aria-label="Delete comment">
+                            aria-label="Delete image">
                             <IconX class="w-8 h-8" />
                         </button>
 
                         <input ref="fileInput" type="file" class="hidden" @change="handleFileChange">
                     </div>
-                    <!-- <input v-model="postData.image"
-                        @input="(e: Event) => updatePostData('image', (e.target as HTMLInputElement).value)"
-                        placeholder="Enter Your image URL" class="border border-slate-400 rounded-md h-10 px-3" /> -->
                 </div>
             </div>
         </div>
