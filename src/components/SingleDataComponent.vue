@@ -198,6 +198,7 @@ watch(() => props.active, (newData) => {
 });
 
 const updatePostData = <T extends keyof Post>(field: T, value: Post[T]) => {
+    console.log(value)
     if (props.data && props.active === 'Post') {
         postData.value = { ...postData.value, [field]: value };
     }
@@ -307,6 +308,7 @@ const handleImageUpload = async () => {
 };
 
 
+
 </script>
 
 <template>
@@ -332,8 +334,8 @@ const handleImageUpload = async () => {
                         <option value="" disabled selected>Select a Subject</option>
                         <option value="Sports">Sports</option>
                         <option value="Technology">Technology</option>
-                        <option value="Science">Gaming</option>
-                        <option value="Health">Entertainment</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Entertainment">Entertainment</option>
                     </select>
                 </div>
                 <div class="w-full flex flex-col gap-2">

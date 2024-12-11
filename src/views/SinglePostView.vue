@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, reactive, computed } from 'vue';
+import { useMeta, MetaInfo } from 'vue-meta'
+import { useClipboard } from '@vueuse/core'
 import { RouterLink, useRoute, useRouter } from "vue-router";
-import { IconUserCircle, IconBrandGithub, IconBrandLinkedin, IconMenu2 } from '@tabler/icons-vue';
+import { IconUserCircle, IconBrandGithub, IconBrandLinkedin, IconMenu2, } from '@tabler/icons-vue';
 import { useConvexMutation, useConvexQuery } from "@convex-vue/core";
 import { api } from "../../convex/_generated/api";
 import type { Id } from '../../convex/_generated/dataModel';
@@ -33,6 +35,7 @@ let commentData = reactive({
 
 const route = useRoute();
 const router = useRouter();
+
 const id = ref(route.params.id);
 
 const { data: post, isLoading: isPostLoading, error: postError } = useConvexQuery(api.posts.getSingle, { id: id.value as string });
@@ -46,17 +49,49 @@ const { data: postBySubject, isLoading: isPostBySubjectLoading, error: postBySub
 const { data: comments, isLoading: isCommentLoading, error: commentError } = useConvexQuery(api.comments.getByPostId, { postId: id.value as string });
 const { mutate: postComment, isLoading: isAddCommentLoading, error: addCommentError } = useConvexMutation(api.comments.add)
 const { mutate: updateComment, isLoading: isUpdateCommentLoading, error: updateCommentError } = useConvexMutation(api.comments.update)
+const { text, copy, copied, isSupported } = useClipboard();
+const isCopiedModalVisible = ref(false); // State for the modal visibility
+
+const showCopiedModal = () => {
+  isCopiedModalVisible.value = true;
+  setTimeout(() => {
+    isCopiedModalVisible.value = false;
+  }, 2000); // Hide the modal after 2 seconds
+};
+
+const copyWebsiteUrl = () => {
+  const currentUrl = window.location.href;
+  copy(currentUrl);
+  showCopiedModal(); // Show modal when URL is copied
+};
+
+console.log(post.value)
+
+useMeta({
+  title: "Shuvam's Blog",
+  // meta: [
+  //   { property: 'og:title', content: post.value.title },
+  //   { property: 'og:description', content: post.value.description },
+  //   { property: 'og:image', content: post.value.image},
+  //   { property: 'og:url', content: window.location.href },
+  // ],
+});
+
+
+
+
 
 const handleCommentData = <T extends keyof Comment>(field: T, value: Comment[T]) => {
   commentData = { ...commentData, [field]: value };
 };
+
 
 const submitComment = () => {
   postComment({
     ...commentData,
     postId: id.value as Id<"Post">,
     subcomment: [],
-})
+  })
 
   commentData.comment = "",
     commentData.name = "",
@@ -130,7 +165,6 @@ const filteredPost = computed<Post[]>(() => {
 
 const toggleMenu = () => isMenuOpen.value = !isMenuOpen.value;
 
-
 </script>
 
 <template>
@@ -190,10 +224,23 @@ const toggleMenu = () => isMenuOpen.value = !isMenuOpen.value;
         :class="{ 'opacity-0 translate-y-8': !showContent, 'opacity-100 translate-y-0': showContent }"
         class="bg-white overflow-hidden transition-all duration-500 ease-out">
         <div class="px-4">
-          <div class="container mx-auto mt-8 md:mt-20">
-            <div class="mt-4 bg-blue-100 px-2.5 py-2 rounded w-fit mx-auto">
+          <div class="container mx-auto mt-8 md:mt-20 flex items-center w-full md:w-[70%] py-2">
+            <div class="bg-blue-100 px-2.5 py-2 rounded w-fit mx-auto">
               <h1 class="text-blue-800 text-sm md:text-base font-semibold text-center">{{ post.subject }}</h1>
             </div>
+            <button @click="copyWebsiteUrl" class="bg-green-500 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-share-3">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M13 4v4c-6.575 1.028 -9.02 6.788 -10 12c-.037 .206 5.384 -5.962 10 -6v4l8 -7l-8 -7z" />
+              </svg>
+            </button>
+          </div>
+
+          <div v-if="isCopiedModalVisible"
+            class="fixed top-10 right-10 bg-green-500 text-white px-4 py-2 rounded shadow-lg transition-transform transform scale-100">
+            URL copied to clipboard!
           </div>
 
           <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mt-5 mb-5 md:mb-14 text-center">{{ post.title }}</h1>
@@ -266,7 +313,7 @@ const toggleMenu = () => isMenuOpen.value = !isMenuOpen.value;
           <section class="w-full md:w-1/2 mx-auto">
             <h1 class="text-lg md:text-3xl font-bold mb-5">Comments</h1>
 
-            <article v-if="comments.length ===0 ">
+            <article v-if="comments.length === 0">
               <h1 class="text-sm md:text-lg font-medium text-gray-500">No Comments</h1>
             </article>
 
