@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
-import { useConvexPaginatedQuery } from "@convex-vue/core";
+import { useConvexPaginatedQuery, useConvexQuery } from "@convex-vue/core";
 import Navbar from "@/components/Navbar.vue";
 import Cover from "@/assets/cover.png";
 import { api } from "../../convex/_generated/api";
@@ -15,7 +15,10 @@ const {
   isLoadingMore,
   isDone,
   loadMore,
-} = useConvexPaginatedQuery(api.posts.paginatedPosts, {}, { numItems: 3 });
+} = useConvexPaginatedQuery(api.posts.paginatedPosts, { cover: true }, { numItems: 3 });
+
+const { data: coverPost, isLoading: isCoverPostLoading } = useConvexQuery(api.posts.getCoverPost, {});
+
 
 const getPostClass = (index: number) => {
   const positionInGroup = index % 6;
@@ -44,29 +47,34 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll);
 });
+
+console.log(coverPost.value)
+
 </script>
 
 <template>
   <div>
     <Navbar navLink="Home">
-      <div v-if="isLoading" class="min-h-screen flex items-center justify-center">
+      <div v-if="isLoading && isCoverPostLoading" class="min-h-screen flex items-center justify-center">
         <div class="loader"></div>
       </div>
       <div v-else class="w-[90%] md:w-[70%] mx-auto">
         <!-- cover pic -->
-        <div class="h-96 md:h-80 w-full flex flex-col md:flex-row drop-shadow-md rounded-md mb-8">
+        <div class="h-fit md:h-80 w-full flex flex-col md:flex-row drop-shadow-md rounded-md mb-8">
           <div class="w-full md:w-[70%] h-1/2 md:h-full">
-            <img :src="Cover" alt="" class="w-full h-full object-cover">
+            <img :src="coverPost[0].image ?? Cover" alt="" class="w-full h-full object-cover border-black">
           </div>
           <div
-            class="w-full md:w-[40%] h-1/2 md:h-full bg-white flex flex-col items-center pt-8 pb-3 text-center px-3 gap-3">
-            <h1 class="text-2xl font-semibold font-poppins">
-              I started a newsletter
-            </h1>
-            <p class="font-normal text-base font-poppins overflow-y-auto">I started a newsletter in January. It is
-              called
-              Shuvam's tip</p>
+            class="w-full md:w-[40%] h-1/2 md:h-full bg-gray-100 flex flex-col items-center pt-8 pb-3 px-6 gap-3 cursor-pointer"
+            @click="router.push(`/${coverPost[0]._id}`)">
+            <p class="text-gray-600 text-xs mb-2 font-medium">{{ coverPost[0].subject.toUpperCase() }}</p>
+            <h2 class="text-base md:text-xl font-semibold font-poppins mb-4">{{  coverPost[0].title }}</h2>
+            <p class="font-normal text-sm md:text-base font-poppins pb-8 md:pb-0">
+              {{ formatPostDescription(coverPost[0].description) }} <span class="text-xs text-gray-400">see more</span>
+            </p>
           </div>
+
+
         </div>
         <div class="flex flex-wrap -mx-2">
           <div v-for="(post, index) in paginatedPosts" :key="post._id" :class="['px-2 mb-4', getPostClass(index)]">

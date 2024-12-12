@@ -65,16 +65,15 @@ const copyWebsiteUrl = () => {
   showCopiedModal(); // Show modal when URL is copied
 };
 
-console.log(post.value)
 
 useMeta({
   title: "Shuvam's Blog",
-  // meta: [
-  //   { property: 'og:title', content: post.value.title },
-  //   { property: 'og:description', content: post.value.description },
-  //   { property: 'og:image', content: post.value.image},
-  //   { property: 'og:url', content: window.location.href },
-  // ],
+  meta: [
+    { property: 'og:title', content: post.value?.title ?? "Default Title" },
+    { property: 'og:description', content: post.value?.description ?? "Default Description" },
+    { property: 'og:image', content: post.value?.image ?? "Default Image"},
+    { property: 'og:url', content: window?.location.href ?? "" },
+  ],
 });
 
 
@@ -246,7 +245,7 @@ const toggleMenu = () => isMenuOpen.value = !isMenuOpen.value;
           <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mt-5 mb-5 md:mb-14 text-center">{{ post.title }}</h1>
 
           <img :src="post.image" :alt="post.title"
-            class="w-full md:w-[80%] mx-auto h-[20rem] md:h-[30rem] object-cover">
+            class="w-full md:w-[80%] mx-auto h-[20rem] md:h-[30rem] object-cover shadow-xl">
 
           <div
             class="max-w-full md:max-w-[60%] h-auto md:min-h-60 w-auto md:mx-auto md:-mt-32 bg-white p-2 md:p-6 relative md:shadow-lg mb-3 md:mb-10">

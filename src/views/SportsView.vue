@@ -10,7 +10,6 @@ const {
   isLoadingMore,
   isDone,
   loadMore,
-
 } = useConvexPaginatedQuery(api.posts.paginatedPosts, { subject: "Sports" }, { numItems: 3 });
 
 

@@ -4,5 +4,6 @@ interface Post {
   title: string;
   description: string;
   image: string;
+  cover:boolean
   _creationTime?: Date;
 }

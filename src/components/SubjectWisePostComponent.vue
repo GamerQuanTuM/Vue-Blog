@@ -33,14 +33,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="h-auto w-[95%] md:w-[80%] mx-auto grid md:grid-cols-3 gap-5">
+    <div class="h-fit w-[95%] md:w-[80%] mx-auto grid md:grid-cols-3 gap-5">
         <div v-if="posts.length > 0" v-for="post in posts" class="shadow-md cursor-pointer rounded-xl"
             @click="router.push(`/${post._id}`)">
             <img :src="post.image" class="h-1/2 w-full rounded-t-xl" />
             <div class="flex flex-col gap-2 p-5 rounded-b-xl">
                 <p class="text-gray-600 text-xs mb-2 font-medium">{{ post.subject.toUpperCase() }}</p>
-                <h2 class="text-xl font-semibold font-poppins mb-4">{{ post.title }}</h2>
-                <p class="font-normal text-base font-poppins">
+                <h2 class="text-base md:text-xl font-semibold font-poppins mb-4">{{ post.title }}</h2>
+                <p class="font-normal text-sm md:text-base font-poppins pb-8 md:pb-0">
                     {{ formatPostDescription(post.description) }}...
                 </p>
             </div>

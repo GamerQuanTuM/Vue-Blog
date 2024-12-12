@@ -2,12 +2,12 @@
 import { ref, watch } from 'vue';
 import { IconEdit, IconTrash, IconX } from '@tabler/icons-vue';
 import { useConvexMutation } from '@convex-vue/core';
+import axios from 'axios';
 
 import type { ActiveSchema } from '@/views/AdminView.vue';
 import TipTapEditor from './TipTapEditor.vue';
 import { api } from '../../convex/_generated/api';
 import type { Id } from 'convex/_generated/dataModel';
-import axios from 'axios';
 
 const props = defineProps<{
     data: Post | Comment | null;
@@ -15,17 +15,21 @@ const props = defineProps<{
     isCreatingNew: boolean;
 }>();
 
+const isCover = ref<boolean>(false)
+
 
 const postData = ref<{
     title: string;
     description: string;
     image: string;
     subject: string;
+    cover: boolean
 }>({
     title: '',
     description: '',
     image: '',
     subject: '',
+    cover: false
 });
 
 const commentData = ref<{
@@ -54,6 +58,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFile = ref<File | null>(null);
 const temporaryImg = ref<string | null>(null);
 
+
 const isImageUploading = ref<boolean>(false)
 
 const handleFileChange = (event: Event) => {
@@ -80,7 +85,6 @@ const resetImage = () => {
 
 const { isLoading: isPostAddLoading, mutate: addPost } = useConvexMutation(api.posts.add, {
     onSuccess(data) {
-        console.log("Posts Added", data);
         window.location.reload();
     },
     onError(err) {
@@ -142,6 +146,7 @@ watch(
                 description: (newData as Post).description ?? '',
                 image: (newData as Post).image ?? '',
                 subject: (newData as Post).subject ?? '',
+                cover: (newData as Post).cover ?? false,
             };
         } else if (props.active === 'Comment' && newData) {
             commentData.value = {
@@ -163,6 +168,7 @@ watch(() => props.isCreatingNew, (newVal) => {
             description: '',
             image: '',
             subject: '',
+            cover: isCover.value
         };
 
         commentData.value = {
@@ -184,6 +190,7 @@ watch(() => props.active, (newData) => {
                 description: '',
                 image: '',
                 subject: '',
+                cover: isCover.value
             };
         } else if (newData === 'Comment') {
             commentData.value = {
@@ -198,9 +205,11 @@ watch(() => props.active, (newData) => {
 });
 
 const updatePostData = <T extends keyof Post>(field: T, value: Post[T]) => {
-    console.log(value)
     if (props.data && props.active === 'Post') {
         postData.value = { ...postData.value, [field]: value };
+        if (field === 'cover') {
+            isCover.value = value as boolean; 
+        }
     }
 };
 
@@ -217,13 +226,13 @@ const saveNewData = async () => {
             let imageUrl = postData.value.image;
             if (temporaryImg.value) {
                 imageUrl = await handleImageUpload();
-                console.log("Getting the ImageUrl first", imageUrl)
             }
             addPost({
                 description: postData.value.description ?? "",
                 subject: postData.value.subject ?? "",
                 image: imageUrl ?? "",
-                title: postData.value.title ?? ""
+                title: postData.value.title ?? "",
+                cover: isCover.value  // Use isCover.value here
             });
         } else {
             let imageUrl = postData.value.image;
@@ -236,6 +245,7 @@ const saveNewData = async () => {
                 image: imageUrl ?? "",
                 title: postData.value.title ?? "",
                 _id: props.data?._id as string,
+                cover: isCover.value  // Use isCover.value here
             });
         }
     } else if (props.active === 'Comment') {
@@ -314,9 +324,26 @@ const handleImageUpload = async () => {
 <template>
     <div class="h-full w-full flex flex-col"
         v-if="active === 'Post' && (isCreatingNew || (postData.description != '' && postData.image != '' && postData.subject != '' && postData.title != ''))">
-        <div class="h-20 w-full bg-[#E8F1FE] justify-center px-7 flex flex-col gap-1">
-            <h1 class="text-[#132540] text-xl font-medium">{{ isCreatingNew ? 'Create New Post' : postData.title }}</h1>
-            <h1 class="text-[#132540] text-base font-normal">{{ isCreatingNew ? 'New Subject' : postData.subject }}</h1>
+        <div class="flex justify-between items-center w-full bg-[#E8F1FE]">
+            <div class="h-fit py-3 w-full  justify-center px-7 flex flex-col gap-1">
+                <h1 class="text-[#132540] text-base md:text-xl font-medium">{{ isCreatingNew ? 'Create New Post' : postData.title }}
+                </h1>
+                <h1 class="text-[#132540] text-sm md:text-base font-normal">{{ isCreatingNew ? 'New Subject' : postData.subject }}
+                </h1>
+            </div>
+            <div class="flex items-center mr-5">
+                <span class="text-gray-700 w-20">Set Cover</span>
+                <label class="relative inline-block w-12 h-6">
+                    <input :checked="isCreatingNew ? false : postData.cover"
+                        @change="(e: Event) => updatePostData('cover', (e.target as HTMLInputElement).checked)"
+                        type="checkbox" id="toggle" class="sr-only peer" />
+                    <span
+                        class="block w-full h-full bg-gray-300 rounded-full peer-checked:bg-green-500 transition-all"></span>
+                    <span
+                        class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full peer-checked:translate-x-6 transition-transform"></span>
+                </label>
+            </div>
+
         </div>
         <div class="flex-1 overflow-y-auto">
             <div class="flex flex-col gap-8 items-center w-[80%] mx-auto py-10">
@@ -402,9 +429,9 @@ const handleImageUpload = async () => {
     <div v-else-if="active === 'Comment' && (isCreatingNew || (commentData.comment != '' && commentData.email != '' && commentData.name != '' && commentData.postId != ''))"
         class="w-full h-full flex flex-col">
         <div class="h-20 w-full bg-[#E8F1FE] justify-center px-7 flex flex-col gap-1">
-            <h1 class="text-[#132540] text-xl font-medium">{{ isCreatingNew ? 'Create New Comment' : commentData.name }}
+            <h1 class="text-[#132540] text-base md:text-xl font-medium">{{ isCreatingNew ? 'Create New Comment' : commentData.name }}
             </h1>
-            <h1 class="text-[#132540] text-base font-normal">{{ isCreatingNew ? 'New Email' : commentData.email }}</h1>
+            <h1 class="text-[#132540] text-sm md:text-base font-normal">{{ isCreatingNew ? 'New Email' : commentData.email }}</h1>
         </div>
         <div class="flex-1 overflow-y-auto">
             <div class="flex flex-col gap-8 items-center w-[80%] mx-auto py-10">
@@ -480,5 +507,14 @@ const handleImageUpload = async () => {
 <style scoped>
 .ql-toolbar {
     border: 0px !important;
+}
+
+#toggle:checked+.block {
+    background-color: #4CAF50;
+    /* Green for "On" state */
+}
+
+#toggle:checked+.block .dot {
+    transform: translateX(100%);
 }
 </style>

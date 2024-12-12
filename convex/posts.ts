@@ -31,16 +31,37 @@ export const getSingleBySubject = query({
   },
 });
 
+export const getCoverPost = query({
+  args: {},
+  async handler(ctx) {
+    return await ctx.db
+      .query("Post")
+      .filter((q) => q.eq(q.field("cover"), true))
+      .collect();
+  },
+});
+
 export const paginatedPosts = query({
   args: {
     paginationOpts: paginationOptsValidator,
     subject: v.optional(v.string()),
+    cover: v.optional(v.boolean()),
   },
-  handler: async (ctx, {subject,paginationOpts}) => {
-    if(subject){
-      return await ctx.db.query("Post").filter((q) => q.eq(q.field("subject"), subject)).paginate(paginationOpts);
+  handler: async (ctx, { subject, paginationOpts, cover }) => {
+    if (cover) {
+      return await ctx.db
+        .query("Post")
+        .filter((q) => q.eq(q.field("cover"), false))
+        .paginate(paginationOpts);
+    } else {
+      if (subject) {
+        return await ctx.db
+          .query("Post")
+          .filter((q) => q.eq(q.field("subject"), subject))
+          .paginate(paginationOpts);
+      }
+      return await ctx.db.query("Post").paginate(paginationOpts);
     }
-    return await ctx.db.query("Post").paginate(paginationOpts);
   },
 });
 
@@ -50,17 +71,39 @@ export const add = mutation({
     image: v.string(),
     subject: v.string(),
     title: v.string(),
+    cover: v.boolean(),
   },
-  handler: async (ctx, { description, image, subject, title }) => {
-    const newPost = await ctx.db.insert("Post", {
-      description,
-      image,
-      subject,
-      title,
-    });
-    return newPost;
+  handler: async (ctx, { description, image, subject, title, cover }) => {
+    let newPost;
+    if (cover) {
+      const allPosts = await ctx.db.query("Post").collect();
+      const updatePromises = allPosts.map((post) =>
+        ctx.db.patch(post._id, { cover: false })
+      );
+      await Promise.all(updatePromises);
+      newPost = await ctx.db.insert("Post", {
+        description,
+        image,
+        subject,
+        title,
+        cover: true,
+      });
+
+      return newPost;
+    } else {
+      newPost = await ctx.db.insert("Post", {
+        description,
+        image,
+        subject,
+        title,
+        cover: false,
+      });
+
+      return newPost;
+    }
   },
 });
+
 export const update = mutation({
   args: {
     description: v.string(),
@@ -68,15 +111,38 @@ export const update = mutation({
     subject: v.string(),
     title: v.string(),
     _id: v.string(),
+    cover: v.boolean(),
   },
-  handler: async (ctx, { description, image, subject, title, _id }) => {
+  handler: async (ctx, { description, image, subject, title, _id, cover }) => {
+    console.log("isCover", cover);
+    let updatedPost;
     if (_id) {
-      const updatedPost = await ctx.db.patch(_id as Id<"Post">, {
-        description,
-        image,
-        subject,
-        title,
-      });
+      if (cover) {
+        const currentCoverPost = await ctx.db
+          .query("Post")
+          .filter((q) => q.eq(q.field("cover"), true))
+          .first();
+
+        if (currentCoverPost) {
+          await ctx.db.patch(currentCoverPost._id, { cover: false });
+        }
+
+        updatedPost = await ctx.db.patch(_id as Id<"Post">, {
+          description,
+          image,
+          subject,
+          title,
+          cover: true,
+        });
+      } else {
+        updatedPost = await ctx.db.patch(_id as Id<"Post">, {
+          description,
+          image,
+          subject,
+          title,
+        });
+      }
+
       return updatedPost;
     }
   },
