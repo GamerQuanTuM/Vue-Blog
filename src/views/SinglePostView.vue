@@ -9,6 +9,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from '../../convex/_generated/dataModel';
 import { formatPostDescription } from '@/functions';
 
+
 const navOptions = [
   { name: "HOME", link: "/" },
   { name: "SPORTS", link: "/sports" },
@@ -100,11 +101,9 @@ const submitComment = () => {
 const submitReply = (comment: Comment) => {
   const { _creationTime, ...rest } = comment;
 
-  // Filter out undefined values from subcomment array
   const subcomments = (Array.isArray(comment.subcomment) ? comment.subcomment : [comment.subcomment])
     .filter((subcomment): subcomment is { name: string; email: string; comment: string; } => subcomment !== undefined);
 
-  // Ensure replyForm.value is of the correct type
   const newReply = { ...replyForm.value };
 
   const postCommentObj = {
@@ -257,14 +256,14 @@ const toggleMenu = () => isMenuOpen.value = !isMenuOpen.value;
         <h2 class="text-xs md:text-sm text-indigo-700 font-normal my-3 w-[90%] md:w-[80%] mx-auto">Post you may also
           like</h2>
         <section
-          class="flex flex-col md:flex-row md:justify-between items-center my-10 gap-5 w-[90%] md:w-[80%] mx-auto">
+          class="flex flex-col md:flex-row md:justify-start items-center my-10 gap-5 w-[90%] md:w-[80%] mx-auto">
           <RouterLink :to="`/${post._id}`" v-for="post in filteredPost" :key="post._id"
-            class="flex flex-col gap-3 shadow-md rounded-xl p-3 h-[29rem] cursor-pointer">
+            class="flex flex-col gap-3 shadow-md rounded-xl p-3 h-fit pb-5 md:pb-2 md:h-[35rem] cursor-pointer w-full md:w-1/3">
             <img :src="post.image" alt="" class="w-full h-1/2 object-cover mb-3">
             <div class="h-1/2 flex flex-col bg-white gap-3">
               <p class="text-gray-600 text-xs mb-2 font-medium">{{ post.subject.toUpperCase() }}</p>
               <h2 class="text-xl font-semibold font-poppins mb-4">{{ post.title }}</h2>
-              <p class="font-normal text-base font-poppins"> {{ formatPostDescription(post.description) }}......</p>
+              <p class="font-normal text-base font-poppins "> {{ formatPostDescription(post.description) }}......</p>
             </div>
           </RouterLink>
         </section>
