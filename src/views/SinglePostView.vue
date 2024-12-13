@@ -67,17 +67,39 @@ const copyWebsiteUrl = () => {
 };
 
 
-watch([post, route], () => {
+const updateMetaTags = () => {
+  if (!post.value) return;
+
+  const fullImageUrl = post.value.image 
+    ? new URL(post.value.image, window.location.origin).href 
+    : `${window.location.origin}/default-og-image.jpg`;
+
   useHead({
-    title: post.value?.title ? `${post.value.title} | Shuvam's Blog` : "Shuvam's Blog",
+    title: computed(() => `${post.value?.title || 'Loading...'} | Shuvam's Blog`),
     meta: [
-      { property: 'og:title', content: post.value?.title ?? "Shuvam's Blog" },
-      { property: 'og:description', content: post.value?.description ? `${post.value?.description.slice(0, 40)}...` : "Default Description" },
-      { property: 'og:image', content: post.value?.image ?? "Default Image" },
-      { property: 'og:url', content: window?.location.href ?? "" },
+      { name: 'description', content: computed(() => post.value?.description?.slice(0, 160) ?? "Default Description") },
+      
+      // Open Graph / Facebook
+      { property: 'og:type', content: 'article' },
+      { property: 'og:title', content: computed(() => post.value?.title ?? "Shuvam's Blog") },
+      { property: 'og:description', content: computed(() => post.value?.description?.slice(0, 160) ?? "Default Description") },
+      { property: 'og:image', content: computed(() => fullImageUrl) },
+      { property: 'og:url', content: computed(() => window.location.href) },
+      { property: 'og:site_name', content: "Shuvam's Blog" },
+      
+      // Twitter Card
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: computed(() => post.value?.title ?? "Shuvam's Blog") },
+      { name: 'twitter:description', content: computed(() => post.value?.description?.slice(0, 160) ?? "Default Description") },
+      { name: 'twitter:image', content: computed(() => fullImageUrl) },
+    ],
+    link: [
+      { rel: 'canonical', href: computed(() => window.location.href) },
     ],
   });
-}, { immediate: true });
+};
+
+watch(post, updateMetaTags, { immediate: true });
 
 const handleCommentData = <T extends keyof Comment>(field: T, value: Comment[T]) => {
   commentData = { ...commentData, [field]: value };
