@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, reactive, computed } from 'vue';
-import { useMeta, MetaInfo } from 'vue-meta'
+import { useHead } from '@vueuse/head';
 import { useClipboard } from '@vueuse/core'
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { IconUserCircle, IconBrandGithub, IconBrandLinkedin, IconMenu2, } from '@tabler/icons-vue';
@@ -67,19 +67,17 @@ const copyWebsiteUrl = () => {
 };
 
 
-useMeta({
-  title: "Shuvam's Blog",
-  meta: [
-    { property: 'og:title', content: post.value?.title ?? "Default Title" },
-    { property: 'og:description', content: post.value?.description ?? "Default Description" },
-    { property: 'og:image', content: post.value?.image ?? "Default Image"},
-    { property: 'og:url', content: window?.location.href ?? "" },
-  ],
-});
-
-
-
-
+watch([post, route], () => {
+  useHead({
+    title: post.value?.title ? `${post.value.title} | Shuvam's Blog` : "Shuvam's Blog",
+    meta: [
+      { property: 'og:title', content: post.value?.title ?? "Shuvam's Blog" },
+      { property: 'og:description', content: post.value?.description ? `${post.value?.description.slice(0, 40)}...` : "Default Description" },
+      { property: 'og:image', content: post.value?.image ?? "Default Image" },
+      { property: 'og:url', content: window?.location.href ?? "" },
+    ],
+  });
+}, { immediate: true });
 
 const handleCommentData = <T extends keyof Comment>(field: T, value: Comment[T]) => {
   commentData = { ...commentData, [field]: value };
@@ -255,8 +253,7 @@ const toggleMenu = () => isMenuOpen.value = !isMenuOpen.value;
         <h1 class="text-xl md:text-3xl font-bold my-3 w-[90%] md:w-[80%] mx-auto">Related Posts</h1>
         <h2 class="text-xs md:text-sm text-indigo-700 font-normal my-3 w-[90%] md:w-[80%] mx-auto">Post you may also
           like</h2>
-        <section
-          class="flex flex-col md:flex-row md:justify-start items-center my-10 gap-5 w-[90%] md:w-[80%] mx-auto">
+        <section class="flex flex-col md:flex-row md:justify-start items-center my-10 gap-5 w-[90%] md:w-[80%] mx-auto">
           <RouterLink :to="`/${post._id}`" v-for="post in filteredPost" :key="post._id"
             class="flex flex-col gap-3 shadow-md rounded-xl p-3 h-fit pb-5 md:pb-2 md:h-[35rem] cursor-pointer w-full md:w-1/3">
             <img :src="post.image" alt="" class="w-full h-1/2 object-cover mb-3">

@@ -31,6 +31,7 @@
     "@tiptap/starter-kit": "^2.6.6",
     "@tiptap/vue-3": "^2.6.6",
     "@vueuse/core": "^11.0.3",
+    "@vueuse/head": "^2.0.0",
     "axios": "^1.7.7",
     "cloudinary-vue": "^1.2.4",
     "convex": "^1.15.0",
@@ -38,7 +39,6 @@
     "marked": "^14.1.1",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
-    "vue-meta": "^3.0.0-alpha.10",
     "vue-router": "^4.3.3"
   },
   "devDependencies": {
